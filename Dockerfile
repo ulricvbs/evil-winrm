@@ -1,14 +1,8 @@
 # Evil-WinRM Dockerfile
 
-# Base image
-FROM ruby:latest
-
-# Credits & Data
-LABEL \
-    name="Evil-WinRM" \
-    author="CyberVaca <cybervaca@gmail.com>" \
-    maintainer="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
-    description="The ultimate WinRM shell for hacking/pentesting"
+# Build image
+FROM ruby:2.7.4-bullseye as builder
+LABEL stage=builder
 
 #Env vars
 ENV EVILWINRM_URL="https://github.com/Hackplayers/evil-winrm.git"
@@ -20,6 +14,20 @@ RUN gem install \
     stringio \
     logger \
     fileutils
+    
+################################################################    
+# Final image
+FROM ruby:2.7.4-slim-bullseye
+
+# Credits & Data
+LABEL \
+    name="Evil-WinRM" \
+    author="CyberVaca <cybervaca@gmail.com>" \
+    maintainer="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
+    description="The ultimate WinRM shell for hacking/pentesting"
+
+# Copy built gems to this stage
+COPY --from=builder /usr/local/bundle /usr/local/bundle
 
 # Create volume for powershell scripts
 RUN mkdir /ps1_scripts
